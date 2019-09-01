@@ -1,18 +1,15 @@
+# Using GitLab CI to deploy to GitHub pages
+
 image: barichello/godot-ci:3.1.1
 
 stages:
   - export
   - deploy
 
-before_script:
-  - mkdir -v -p build/linux
-  - mkdir -v -p build/windows
-  - mkdir -v -p build/mac
-  - mkdir -v -p build/web
-
 linux:
   stage: export
   script:
+    - mkdir -v -p build/linux
     - godot -v --export "Linux/X11" ./build/linux/$EXPORT_NAME.x86_64
   artifacts:
     name: $EXPORT_NAME-$CI_JOB_NAME
@@ -22,6 +19,7 @@ linux:
 windows:
   stage: export
   script:
+    - mkdir -v -p build/windows
     - godot -v --export "Windows Desktop" ./build/windows/$EXPORT_NAME.exe
   artifacts:
     name: $EXPORT_NAME-$CI_JOB_NAME
@@ -31,6 +29,7 @@ windows:
 mac:
   stage: export
   script:
+    - mkdir -v -p build/mac
     - godot -v --export "Mac OSX" ./build/mac/$EXPORT_NAME.zip
   artifacts:
     name: $EXPORT_NAME-$CI_JOB_NAME
@@ -40,13 +39,13 @@ mac:
 web:
   stage: export
   script:
+    - mkdir -v -p build/web
     - godot -v --export "HTML5" ./build/web/index.html
   artifacts:
     name: $EXPORT_NAME-$CI_JOB_NAME
     paths:
       - build/web
 
-# Use project root to deploy for the gh-pages branch
 deploy-github-pages:
   stage: deploy
   dependencies:
@@ -59,5 +58,5 @@ deploy-github-pages:
     - git config user.name $GIT_USERNAME
     - git remote add github $REMOTE_URL
     - git add -A
-    - 'git commit -m "ci: Deploy GitHub Page $EXPORT_NAME-$CI_JOB_NAME$" -m "Deploy from GitLab pipeline \#$CI_PIPELINE_ID"'
+    - 'git commit -m "ci: Deploy GitHub Page $EXPORT_NAME/$CI_JOB_NAME" -m "Deploy from GitLab pipeline \#$CI_PIPELINE_ID"'
     - git push github gh-pages -f
